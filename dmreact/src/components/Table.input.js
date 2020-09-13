@@ -35,9 +35,8 @@ function TableInputs(props) {
             <table>
                 <thead>
                     { 
-                        listAttributes.length > 0 && listAttributes.map((item) => {
-                            console.log(item)
-                            return <input type="text" placeholder={item.attribute}/>
+                        listAttributes.length > 0 && listAttributes.map((item, index) => {
+                            return <input key={index} type="text" placeholder={item.attribute}/>
                     })}
                     <input type="button" onClick={addAttributes} value='Attribute'/>
                 </thead>
