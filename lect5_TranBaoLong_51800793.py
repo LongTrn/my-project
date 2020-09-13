@@ -36,9 +36,3 @@ listItem = [
     ['1','0','1','0','1'],
     ['1','0','1','0','0']
 ]
-
-for obj in listItem:
-    print(doBayes(obj, data))
-
-
-
