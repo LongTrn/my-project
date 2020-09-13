@@ -109,13 +109,13 @@ def doApriori(arr, T, minsp, supportList = [], supportMaxList = []):
     return (supportList, supportMaxList)
 
 def toString (init, arr, supportList, supportMaxList):
-    # print('get combination: \n', init, '\n')
-    # print('after eliminating: \n', arr, '\n')
-    # print('support list: \n', supportList, '\n')
-    # print('support max list: \n', supportMaxList, '\n')
+    print('get combination: \n', init, '\n')
+    print('after eliminating: \n', arr, '\n')
+    print('support list: \n', supportList, '\n')
+    print('support max list: \n', supportMaxList, '\n')
     return;
 
-def Apriori(T, minsp, not_print_result = 0):
+def Apriori(T, minsp):
     max_ele = max([ len(order) for order in T])
     init_arr = list(range(max_ele)) #
     totalList = doApriori(init_arr,T,minsp,[],[])
@@ -123,22 +123,17 @@ def Apriori(T, minsp, not_print_result = 0):
     SupportList = totalList[0]
     SupportMaxList = totalList[1]
     
-    if not not_print_result: return('Apriori of ', T, 'with ', minsp, ':\n', Apriori,
-                                    '\nSupport List: \n', SupportList,
-                                    '\nSupport Max List: \n', SupportMaxList
-    )
-    
     return (SupportList, SupportMaxList)
 
-def getSupportList(T, minsp, not_print_result = 0):
-    SupportList = Apriori(T, minsp, 1)[0]
-    if not not_print_result: return(SupportList)
+def getSupportList(T, minsp):
+    SupportList = Apriori(T, minsp)[0]
+    
+    return SupportList
 
-def getSupportMaxList(T, minsp, not_print_result = 0):
-    SupportMaxList = Apriori(T, minsp, 1)[1]
-    if not not_print_result: return('Support Max List: \n', SupportMaxList)
-
-    return SupportMaxList
+def getSupportMaxList(T, minsp):
+    SupportMaxList = Apriori(T, minsp)[1]
+    
+    return(SupportMaxList)
 
 def getAssociativeRule(arr, inputArr, minconf):
     allAssociativeRules = []
@@ -153,15 +148,16 @@ def getAssociativeRule(arr, inputArr, minconf):
             # print(ele,'->', rest, 'Proportion:\t', countArray, '/', countEle, '=',conf)
             if conf >= minconf:
                 allAssociativeRules.append([ele, rest])
+    
     return allAssociativeRules
     
 def AssociativeRules(inputArr, minsp, minconf):
     allAssociativeRules = []
-    supportMaxList = getSupportMaxList(inputArr, minsp, 1)
+    supportMaxList = getSupportMaxList(inputArr, minsp)
     for each in supportMaxList:
         allAssociativeRules += getAssociativeRule(each, inputArr, minconf)
 
-    return ('All AssociativeRules: \n', allAssociativeRules)
+    return (allAssociativeRules)
 
 def do_default(Arr, minsp = 0.3, minconf = 1):
     AprioriResult = Apriori(Arr,minsp)
@@ -169,10 +165,8 @@ def do_default(Arr, minsp = 0.3, minconf = 1):
     SupportMaxList = getSupportMaxList(Arr,minsp)
     allAssociativeRules = AssociativeRules(Arr, minsp, minconf)
     
-    return('Apriori of ', Arr, 'with ', minsp, ':\n', Apriori,
-                                    '\nSupport List: \n', SupportList,
-                                    '\nSupport Max List: \n', SupportMaxList,
-                                    '\nAll AssociativeRules: \n', allAssociativeRules
+    return( Arr, minsp, Apriori, SupportList, 
+            SupportMaxList, allAssociativeRules
     )
 
 def sepLine():
@@ -305,8 +299,16 @@ def export(argument, data, minsp, minconf):
     return switcher.get(argument, do_default(data, minsp, minconf))
 
 result = {
-    options: (export(options, data, minsp, minconf))
+    "result": (export(options, data, minsp, minconf))
 }
 # result = (export('SupportList', data, minsp, minconf))
 print(result)
 sys.stdout.flush()
+
+arr = [[1, 2], [1, 3], [1, 4], [1, 5], [2, 4], [2, 5], [3, 4], [3, 5]]
+sett = {}
+string = [''.join([str(item) for item in order]) for order in arr]
+# string = ['12', '13', '14', '15', '24', '25', '34', '35']
+for key in string:
+    sett.setdefault(key,0.0)
+# sett = {'12': 0.0, '13': 0.0, '14': 0.0, '15': 0.0, '24': 0.0, '25': 0.0, '34': 0.0, '35': 0.0}
