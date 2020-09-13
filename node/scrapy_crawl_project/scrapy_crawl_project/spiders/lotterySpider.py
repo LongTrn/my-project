@@ -56,7 +56,7 @@ class LotterySpider(scrapy.Spider):
                     num = cell.css('td:last-child::text').re('[^\s-][\d]*')
                     listNums.append(num)
         listNums.remove([])
-        listNums = [int(num) for listNum in listNums for num in listNum]
+        listNums = [(num) for listNum in listNums for num in listNum]
         listNums.sort()
         setNums = {}
         setNums.setdefault('nums',listNums)
