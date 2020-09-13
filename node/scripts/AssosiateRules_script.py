@@ -4,6 +4,7 @@
 '''
 
 import sys
+import json
 from itertools import combinations as C
 
 def notDup(arr, check):
@@ -11,7 +12,7 @@ def notDup(arr, check):
     
 def combine(arr):
     output = []
-    for each in arr:
+    for each in arr[:-2]:
         for ele in arr[arr.index(each) + 1:]:
             if type(each) is list and type(ele) is list: 
                 # sort() 
@@ -31,21 +32,23 @@ def combine(arr):
     
 def countElements(arr, T):
     output = 0
-    for i in range(len(T)):
+    for each in T:
         count = 0
-        for j in arr:
-            if T[i][j - 1]: count += T[i][j - 1]
-            if count == len(arr): 
-                output += 1 
-                break
+        # print('each',each)
+        for ele in arr:
+            if each.count(ele): count += 1
+            # print('\nele', ele, 'count', each.count(ele))
+        if count == len(arr): output += 1
+    # print(output)
+
     return output
 
 def checkSP(arr,T,minsp):
     sup = countElements(arr,T)/len(T)
     return (sup > minsp,sup)
-    
+
 def arrangeAscending(arr):
-    
+    if not len(arr): return arr
     # get min max length of each element of list
     minNEle = min([len(each) for each in arr])
     maxNEle = max([len(each) for each in arr])
@@ -54,6 +57,7 @@ def arrangeAscending(arr):
     arr = [eles for each in [[each for each in arr if len(each) == i] for i in range(minNEle, maxNEle + 1)] for eles in each]
     return arr
 
+# get not Duplicates for support Max List
 def validate(supportMaxList, arr = []):
     # combine into a sorted support max list
     supportMaxList += arr
@@ -73,15 +77,13 @@ def validate(supportMaxList, arr = []):
             if flag == len(each): 
                 supportMaxList.remove(each)
                 break
-    # print((supportMaxList))
 
     return supportMaxList
 
-def doApriori(arr, T, minsp, endpoint, supportList = [], supportMaxList = []):
-    
+def doApriori(arr, T, minsp, supportList = [], supportMaxList = []):
     # get combinations
     arr = combine(arr)
-    print('get combination: \n',arr, '\n')
+    init = arr.copy()
 
     # check support fit condition of minsp
     sup = [False]*len(arr)
@@ -100,39 +102,46 @@ def doApriori(arr, T, minsp, endpoint, supportList = [], supportMaxList = []):
     supportMaxList = validate(supportList)
 
     # print
-    toString(arr, supportList, supportMaxList)
+    # toString(init, arr, supportList, supportMaxList)
 
-    if len(arr) > 0: return doApriori(arr, T, minsp, endpoint, supportList,supportMaxList)
+    if len(arr) > 0: return doApriori(arr, T, minsp, supportList,supportMaxList)
     supportList = arrangeAscending(supportList)
     return (supportList, supportMaxList)
 
-def toString (arr, supportList, supportMaxList):
-    print('after eliminating: \n', arr, '\n')
-    print('support list: \n', supportList, '\n')
-    print('support max list: \n', supportMaxList, '\n')
+def toString (init, arr, supportList, supportMaxList):
+    # print('get combination: \n', init, '\n')
+    # print('after eliminating: \n', arr, '\n')
+    # print('support list: \n', supportList, '\n')
+    # print('support max list: \n', supportMaxList, '\n')
     return;
 
-def Apriori(T, minsp):
-    n = len(T[0])
-    init = list(range(1, n + 1)) #
-    endpoint = max([len([ele for ele in each if ele == 1]) for each in A])
+def Apriori(T, minsp, not_print_result = 0):
+    max_ele = max([ len(order) for order in T])
+    init_arr = list(range(max_ele)) #
+    totalList = doApriori(init_arr,T,minsp,[],[])
     
-    totalList = doApriori(init,T,minsp, endpoint,[],[])
     SupportList = totalList[0]
     SupportMaxList = totalList[1]
     
+    if not not_print_result: return('Apriori of ', T, 'with ', minsp, ':\n', Apriori,
+                                    '\nSupport List: \n', SupportList,
+                                    '\nSupport Max List: \n', SupportMaxList
+    )
+    
     return (SupportList, SupportMaxList)
 
-def getSupportList(T, minsp):
-    getSupportList = Apriori(T, minsp)
-    return getSupportList[0]
+def getSupportList(T, minsp, not_print_result = 0):
+    SupportList = Apriori(T, minsp, 1)[0]
+    if not not_print_result: return(SupportList)
 
-def getSupportMaxList(T, minsp):
-    getSupportMaxList = Apriori(T, minsp)
-    return getSupportMaxList[1]
+def getSupportMaxList(T, minsp, not_print_result = 0):
+    SupportMaxList = Apriori(T, minsp, 1)[1]
+    if not not_print_result: return('Support Max List: \n', SupportMaxList)
 
-def getAssociativeRule(arr, inputArr):
-    AssociativeRules = []
+    return SupportMaxList
+
+def getAssociativeRule(arr, inputArr, minconf):
+    allAssociativeRules = []
     for i in (range(1,len(arr))):
         c = [list(ele) for ele in list(C(arr,i))]
         for ele in c:
@@ -142,112 +151,162 @@ def getAssociativeRule(arr, inputArr):
             countArray = countElements(arr,inputArr)
             conf = countArray/countEle
             # print(ele,'->', rest, 'Proportion:\t', countArray, '/', countEle, '=',conf)
-            if conf >= 1:
-                AssociativeRules.append([ele, rest])
-    return AssociativeRules
+            if conf >= minconf:
+                allAssociativeRules.append([ele, rest])
+    return allAssociativeRules
     
-def AssociativeRules(supportMaxList, inputArr):
-    AssociativeRules = []
+def AssociativeRules(inputArr, minsp, minconf):
+    allAssociativeRules = []
+    supportMaxList = getSupportMaxList(inputArr, minsp, 1)
     for each in supportMaxList:
-        AssociativeRules += getAssociativeRule(each, inputArr)
-    return AssociativeRules 
+        allAssociativeRules += getAssociativeRule(each, inputArr, minconf)
 
-def do(Arr, minsp = 0.3, minconf = 1):
-    print('Apriori of ', Arr, 'with ', minsp, ':\n',Apriori(Arr,minsp))
-    print('Support List: \n',getSupportList(Arr,minsp))
+    return ('All AssociativeRules: \n', allAssociativeRules)
 
-    SpMax = getSupportMaxList(Arr,minsp)
-    print('Support Max List: \n', SpMax)
-    print('AssociativeRules: \n', AssociativeRules(SpMax, Arr))
-
-    return;
+def do_default(Arr, minsp = 0.3, minconf = 1):
+    AprioriResult = Apriori(Arr,minsp)
+    SupportList = getSupportList(Arr,minsp)
+    SupportMaxList = getSupportMaxList(Arr,minsp)
+    allAssociativeRules = AssociativeRules(Arr, minsp, minconf)
+    
+    return('Apriori of ', Arr, 'with ', minsp, ':\n', Apriori,
+                                    '\nSupport List: \n', SupportList,
+                                    '\nSupport Max List: \n', SupportMaxList,
+                                    '\nAll AssociativeRules: \n', allAssociativeRules
+    )
 
 def sepLine():
     print('\n' + '#'*156 + '\n')
+
+def get_raw_data(path):
+    with open(path, 'r') as j:
+        json_data = json.load(j)
+
+    raw_data = []
+    for obj in json_data:
+        for each in obj:
+            raw_data += (obj[each]) 
+
+    return raw_data
+
+def seperated_raw_data(raw_data):
+    seperated_data = []
+    for order in raw_data:
+        # [[0, 1, 8, 4, 4] ..., [9, 9, 4]]
+        seperate_orders = [int(item) for item in order] #[0,1,8,4,4]
+        seperated_data.append(seperate_orders)
+
+    return seperated_data
+
+def get_trained_data(seperated_raw_data):
+    trained_data = []
+    max_ele = max([ max(each) for each in seperated_raw_data])
+    
+    for order in seperated_raw_data:
+        tmp_init = [0]*(max_ele + 1)
+        for item in order:
+            tmp_init[item] = order.count(item)
+        trained_data.append(tmp_init)
+
+    return trained_data
+
 '''
     1   get combinations
     2   check minsp
     3   eleminating
-'''
+    
+    A = [
+        [1,0,1,1,0],
+        [1,0,1,1,0],
+        [0,0,1,0,1],
+        [1,1,0,1,1],
+        [1,1,0,1,0],
+        [1,1,0,1,1]
+    ]
 
-A = [
-    [1,0,1,1,0],
-    [1,0,1,1,0],
-    [0,0,1,0,1],
-    [1,1,0,1,1],
-    [1,1,0,1,0],
-    [1,1,0,1,1]
-]
+    B = [
+        [1,0,0,0,0,0,1,1],
+        [1,1,0,0,0,1,1,1],
+        [1,1,0,0,0,1,1,0],
+        [1,0,0,0,0,0,1,1],
+        [0,0,1,1,1,1,0,1],
+        [1,0,0,1,1,0,0,0]
+    ]
+    
+        A
+        1,2,3,4,5
+        12,13,14,15,24,25,34,45 !34
+        124,125,134,145,245 !134
+        1245!
+        134, 1245
 
-B = [
-    [1,0,0,0,0,0,1,1],
-    [1,1,0,0,0,1,1,1],
-    [1,1,0,0,0,1,1,0],
-    [1,0,0,0,0,0,1,1],
-    [0,0,1,1,1,1,0,1],
-    [1,0,0,1,1,0,0,0]
-]
+    # do_default(A,minsp,minconf)
+    # print(Apriori(A,minsp))
+    # print(getSupportList(A,minsp))
 
-minsp = 0.3
-minconf = 1
+    # SpMaxA = getSupportMaxList(A,minsp)
+    # print(SpMaxA)
+    # print(AssociativeRules(SpMaxA, A))
 
-'''
-    A
-    1,2,3,4,5
-    12,13,14,15,24,25,34,45 !34
-    124,125,134,145,245 !134
-    1245!
-    134, 1245
-'''
+    sepLine()
 
-# do(A,minsp,minconf)
-# print(Apriori(A,minsp))
-print(getSupportList(A,minsp))
+        B
+        45, 68, 178, 1267
 
-# SpMaxA = getSupportMaxList(A,minsp)
-# print(SpMaxA)
-# print(AssociativeRules(SpMaxA, A))
+    # do_default(B,minsp,minconf)
+    # print(Apriori(B,minsp))
+    # print(getSupportList(B,minsp))
 
-sepLine()
+    # SpMaxB = getSupportMaxList(B,minsp)
+    # print(SpMaxB)
+    # print(AssociativeRules(SpMaxB, B))
 
-'''
-    B
-    45, 68, 178, 1267
-'''
-
-# do(B,minsp,minconf)
-# print(Apriori(B,minsp))
-# print(getSupportList(B,minsp))
-
-# SpMaxB = getSupportMaxList(B,minsp)
-# print(SpMaxB)
-# print(AssociativeRules(SpMaxB, B))
-
-import json
-
-with open('DM/w5/lect5/assets/crawl/crawl_lottery.json', 'r') as j:
-    json_data = json.load(j)
-
-for obj in json_data:
-    for each in obj:
-        data_demo = (obj[each]) 
-
-# for each in data_demo:
-text = data_demo[0] #01844
-test = [int(each) for each in text] #[0,1,8,4,4]
-
-'''
     "03", 
     "0409"
     "01844", 
     "02595", 
     "02810",
     num contains numbers
-    1   0   0   1   0   0   0   0   0   0
-    2   0   0   0   1   0   0   0   0   1
-    1   1   0   0   2   0   0   0   1   0
-    1   0   1   0   0   2   0   0   0   1
-    2   1   1   0   0   0   0   0   1   0
+    1, 0, 0, 1, 0, 0, 0, 0, 0, 0
+    2, 0, 0, 0, 1, 0, 0, 0, 0, 1
+    1, 1, 0, 0, 2, 0, 0, 0, 1, 0
+    1, 0, 1, 0, 0, 2, 0, 0, 0, 1
+    2, 1, 1, 0, 0, 0, 0, 0, 1, 0
+
+    testdemo = [
+        [1, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [2, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+        [1, 1, 0, 0, 2, 0, 0, 0, 1, 0],
+        [1, 0, 1, 0, 0, 2, 0, 0, 0, 1],
+        [2, 1, 1, 0, 0, 0, 0, 0, 1, 0]
+    ]
 
 '''
+
+minsp = 0.1
+minconf = 1
+
+# inputed_file_path = sys.argv[1]
+options = str(sys.argv[1])
+minsp = float(sys.argv[2])
+minconf = float(sys.argv[3])
+
+file_path = './../../assets/crawl/crawl_lottery.json';
+raw_data = get_raw_data(file_path)
+data = seperated_raw_data(raw_data)
+
+def export(argument, data, minsp, minconf):
+    switcher = {
+        'Apriori': Apriori(data, minsp),
+        'SupportList': getSupportList(data, minsp),
+        'SupportMaxList': getSupportMaxList(data, minsp),
+        'AssociativeRules': AssociativeRules(data, minsp, minconf),
+    }
+    return switcher.get(argument, do_default(data, minsp, minconf))
+
+result = {
+    options: (export(options, data, minsp, minconf))
+}
+# result = (export('SupportList', data, minsp, minconf))
+print(result)
 sys.stdout.flush()

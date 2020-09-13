@@ -44,5 +44,6 @@ for each in inputData:
 obj = []
 for argv in sys.argv:
     obj.append(argv)
-print(doBayes(obj, data))
+    
+print(str(doBayes(obj, data)))
 sys.stdout.flush()
