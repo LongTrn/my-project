@@ -34,7 +34,7 @@ def countElements(arr, T):
     for i in range(len(T)):
         count = 0
         for j in arr:
-            if T[i][j - 1]: count += 1
+            if T[i][j - 1]: count += T[i][j - 1]
             if count == len(arr): 
                 output += 1 
                 break
@@ -43,18 +43,24 @@ def countElements(arr, T):
 def checkSP(arr,T,minsp):
     sup = countElements(arr,T)/len(T)
     return (sup > minsp,sup)
+    
+def arrangeAscending(arr):
+    
+    # get min max length of each element of list
+    minNEle = min([len(each) for each in arr])
+    maxNEle = max([len(each) for each in arr])
+
+    # arrange a max list having each length's element ascending
+    arr = [eles for each in [[each for each in arr if len(each) == i] for i in range(minNEle, maxNEle + 1)] for eles in each]
+    return arr
 
 def validate(supportMaxList, arr = []):
     # combine into a sorted support max list
     supportMaxList += arr
     supportMaxList.sort()
 
-    # get min max length of each element of list
-    minr = min([len(each) for each in supportMaxList])
-    maxr = max([len(each) for each in supportMaxList])
-
     # arrange a max list having each length's element ascending
-    supportMaxList = [eles for each in [[each for each in supportMaxList if len(each) == i] for i in range(minr, maxr + 1)] for eles in each]
+    supportMaxList = arrangeAscending(supportMaxList)
 
     # temporary result to eleminate not max elements
     maxList = supportMaxList.copy()
@@ -75,7 +81,7 @@ def doApriori(arr, T, minsp, endpoint, supportList = [], supportMaxList = []):
     
     # get combinations
     arr = combine(arr)
-    # print('get combination: \n',arr, '\n')
+    print('get combination: \n',arr, '\n')
 
     # check support fit condition of minsp
     sup = [False]*len(arr)
@@ -94,9 +100,10 @@ def doApriori(arr, T, minsp, endpoint, supportList = [], supportMaxList = []):
     supportMaxList = validate(supportList)
 
     # print
-    # toString(arr, supportList, supportMaxList)
+    toString(arr, supportList, supportMaxList)
 
-    if len(arr) > endpoint: return doApriori(arr, T, minsp, endpoint, supportList,supportMaxList)
+    if len(arr) > 0: return doApriori(arr, T, minsp, endpoint, supportList,supportMaxList)
+    supportList = arrangeAscending(supportList)
     return (supportList, supportMaxList)
 
 def toString (arr, supportList, supportMaxList):
@@ -107,11 +114,13 @@ def toString (arr, supportList, supportMaxList):
 
 def Apriori(T, minsp):
     n = len(T[0])
-    init = list(range(1, n + 1))
+    init = list(range(1, n + 1)) #
     endpoint = max([len([ele for ele in each if ele == 1]) for each in A])
+    
     totalList = doApriori(init,T,minsp, endpoint,[],[])
     SupportList = totalList[0]
     SupportMaxList = totalList[1]
+    
     return (SupportList, SupportMaxList)
 
 def getSupportList(T, minsp):
@@ -191,9 +200,9 @@ minconf = 1
     134, 1245
 '''
 
-do(A,minsp,minconf)
+# do(A,minsp,minconf)
 # print(Apriori(A,minsp))
-# print(getSupportList(A,minsp))
+print(getSupportList(A,minsp))
 
 # SpMaxA = getSupportMaxList(A,minsp)
 # print(SpMaxA)
@@ -206,7 +215,7 @@ sepLine()
     45, 68, 178, 1267
 '''
 
-do(B,minsp,minconf)
+# do(B,minsp,minconf)
 # print(Apriori(B,minsp))
 # print(getSupportList(B,minsp))
 
@@ -214,4 +223,31 @@ do(B,minsp,minconf)
 # print(SpMaxB)
 # print(AssociativeRules(SpMaxB, B))
 
+import json
+
+with open('DM/w5/lect5/assets/crawl/crawl_lottery.json', 'r') as j:
+    json_data = json.load(j)
+
+for obj in json_data:
+    for each in obj:
+        data_demo = (obj[each]) 
+
+# for each in data_demo:
+text = data_demo[0] #01844
+test = [int(each) for each in text] #[0,1,8,4,4]
+
+'''
+    "03", 
+    "0409"
+    "01844", 
+    "02595", 
+    "02810",
+    num contains numbers
+    1   0   0   1   0   0   0   0   0   0
+    2   0   0   0   1   0   0   0   0   1
+    1   1   0   0   2   0   0   0   1   0
+    1   0   1   0   0   2   0   0   0   1
+    2   1   1   0   0   0   0   0   1   0
+
+'''
 sys.stdout.flush()
