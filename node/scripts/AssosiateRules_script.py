@@ -136,6 +136,7 @@ def getSupportMaxList(T, minsp):
     return(SupportMaxList)
 
 def getAssociativeRule(arr, inputArr, minconf):
+   
     allAssociativeRules = []
     for i in (range(1,len(arr))):
         c = [list(ele) for ele in list(C(arr,i))]
@@ -145,7 +146,6 @@ def getAssociativeRule(arr, inputArr, minconf):
             countEle = countElements(ele,inputArr)
             countArray = countElements(arr,inputArr)
             conf = countArray/countEle
-            # print(ele,'->', rest, 'Proportion:\t', countArray, '/', countEle, '=',conf)
             if conf >= minconf:
                 allAssociativeRules.append([ele, rest])
     
@@ -274,9 +274,23 @@ def get_trained_data(seperated_raw_data):
         [1, 0, 1, 0, 0, 2, 0, 0, 0, 1],
         [2, 1, 1, 0, 0, 0, 0, 0, 1, 0]
     ]
-
+A = [
+        [1,0,1,1,0],
+        [1,0,1,1,0],
+        [0,0,1,0,1],
+        [1,1,0,1,1],
+        [1,1,0,1,0],
+        [1,1,0,1,1]
+    ]
 '''
-
+A = [
+    [1,3,4],
+    [1,3,4],
+    [3,5],
+    [1,2,4,5],
+    [1,2,4],
+    [1,2,4,5],
+]
 minsp = 0.1
 minconf = 1
 
@@ -299,16 +313,7 @@ def export(argument, data, minsp, minconf):
     return switcher.get(argument, do_default(data, minsp, minconf))
 
 result = {
-    "result": (export(options, data, minsp, minconf))
+    "result": (export(options, A, minsp, minconf))
 }
-# result = (export('SupportList', data, minsp, minconf))
 print(result)
 sys.stdout.flush()
-
-arr = [[1, 2], [1, 3], [1, 4], [1, 5], [2, 4], [2, 5], [3, 4], [3, 5]]
-sett = {}
-string = [''.join([str(item) for item in order]) for order in arr]
-# string = ['12', '13', '14', '15', '24', '25', '34', '35']
-for key in string:
-    sett.setdefault(key,0.0)
-# sett = {'12': 0.0, '13': 0.0, '14': 0.0, '15': 0.0, '24': 0.0, '25': 0.0, '34': 0.0, '35': 0.0}
